@@ -1,0 +1,12 @@
+tmp/
+# Client drawings used for testing; never commit them
+samples/
+.venv/
+__pycache__/
+.pytest_cache/
+*.dxf
+dist/
+node_modules/
+.wrangler/
+# Local values for Worker secrets
+.dev.vars

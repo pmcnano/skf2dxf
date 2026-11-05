@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://skf2dxf.com/sitemap.xml

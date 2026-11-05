@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "skf2dxf",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-20",
+  // Only skf2dxf.com serves the page; a second hostname would split search results
+  "workers_dev": false,
+  "preview_urls": false,
+  // Files that match are served directly; everything else (the API) reaches the Worker
+  "assets": { "directory": "./dist", "binding": "ASSETS" },
+  // Drawings people choose to send so unsupported files can be fixed
+  "kv_namespaces": [{ "binding": "REPORTS", "id": "13e87d54d70240aabd4e20525ddeae77" }],
+  // Per IP; each sent drawing is a KV write and the free plan allows 1,000 a day
+  "ratelimits": [
+    { "name": "REPORT_LIMIT", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } }
+  ],
+  // Alerts for sent drawings go to the REPORT_EMAIL secret, an address verified in Email Routing
+  "send_email": [{ "name": "EMAIL" }],
+  // Anonymous usage counts from the page (POST /api/event)
+  "analytics_engine_datasets": [{ "binding": "EVENTS", "dataset": "skf2dxf_events" }]
+}

@@ -1,0 +1,557 @@
+:root {
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --text: #1d1d1b;
+  --muted: #6b6a66;
+  --border: #d9d7d0;
+  --accent: #1f5fbf;
+  --accent-soft: #e6eefb;
+  --on-accent: #ffffff;
+  /* Control outlines need 3:1 against the page (WCAG 1.4.11) */
+  --field-border: #8a877f;
+  --ok: #1d7a46;
+  --warn: #9a6200;
+  --error: #b3261e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615;
+    --surface: #201f1e;
+    --text: #ecebe8;
+    --muted: #a19f99;
+    --border: #3a3936;
+    --accent: #7aa7f0;
+    --accent-soft: #1d2a40;
+    --on-accent: #10161f;
+    --field-border: #75736d;
+    --ok: #5fc48a;
+    --warn: #e0a84a;
+    --error: #f08b84;
+  }
+}
+
+* { box-sizing: border-box; }
+
+/* Components set their own display, which would otherwise override the hidden attribute */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}
+
+.brand, .page .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+}
+
+.brand img { border-radius: 8px; }
+
+h1 {
+  font-size: 1.75rem;
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+
+.lead {
+  color: var(--muted);
+  margin: 0 0 32px;
+}
+
+.drop {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  border: 2px dashed var(--field-border);
+  border-radius: 12px;
+  background: var(--surface);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.drop:hover, body.dragging .drop {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.drop p { margin: 0; }
+
+.drop-promise {
+  color: var(--ok);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.drop-promise svg { width: 15px; height: 15px; margin-right: 4px; vertical-align: -2px; fill: currentColor; }
+
+.choose {
+  margin-top: 8px;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.choose:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.drop-hint { color: var(--muted); font-size: 0.9rem; }
+
+.drop-loading { display: none; color: var(--muted); font-size: 0.9rem; max-width: 34em; }
+.drop.loading .drop-loading, .drop.failed .drop-loading { display: block; }
+.drop.failed .drop-loading { color: var(--error); }
+
+/* Indeterminate bar along the bottom edge while Pyodide downloads */
+.progress { display: none; position: absolute; left: 10px; right: 10px; bottom: 6px; height: 3px; overflow: hidden; border-radius: 2px; }
+.drop.loading .progress { display: block; }
+.progress::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 30%;
+  background: var(--accent);
+  animation: progress 1.4s ease-in-out infinite;
+}
+
+@keyframes progress {
+  from { left: -30%; }
+  to { left: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress::after { animation: none; left: 0; width: 100%; opacity: 0.4; }
+}
+
+/* After the first files: one line, so results stay in view */
+.drop.compact {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 12px 16px;
+  gap: 4px 12px;
+}
+
+.drop.compact .drop-promise { display: none; }
+.drop.compact .choose { margin: 0; padding: 6px 14px; }
+
+@media (pointer: coarse) {
+  .drop-hint { display: none; }
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin: 16px 0 8px;
+}
+
+.summary p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.summary .summary-error { flex-basis: 100%; color: var(--error); }
+
+.summary button {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.summary button:disabled { opacity: 0.5; cursor: progress; }
+
+
+
+.results {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  /* minmax(0, …) so the widened preview overflows instead of stretching the column */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.results > li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.results .icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.results .pending .icon { color: var(--border); }
+.results .ok .icon { color: var(--ok); }
+.results .warn .icon { color: var(--warn); }
+.results .error .icon { color: var(--error); }
+
+.results .name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.results .detail, .results .warnings, .results .preview-toggle, .results .report {
+  grid-column: 2 / -1;
+}
+
+.results .detail {
+  color: var(--muted);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.results .error .detail { color: var(--error); }
+
+.results .warnings {
+  margin: 0;
+  padding: 0 0 0 18px;
+  color: var(--warn);
+  font-size: 0.9rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.tip { margin: 0 0 8px; color: var(--muted); font-size: 0.9rem; }
+
+.results a {
+  color: #fff;
+  background: var(--accent);
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  .results a { color: #10161f; }
+}
+
+.notes {
+  margin-top: 32px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.notes p { margin: 0 0 8px; }
+
+footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+
+.preview-toggle {
+  grid-column: 1 / -1;
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.preview {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.preview-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.preview-controls .spacer { flex: 1; }
+
+.preview-controls button {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--field-border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.preview-controls button[aria-expanded="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.preview-controls button:disabled { opacity: 0.6; cursor: progress; }
+
+.preview-canvas {
+  position: relative;
+  height: min(70vh, 560px);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  /* Drawings assume white paper, so the preview stays white in dark mode */
+  background: #fff;
+}
+
+.preview-canvas.active { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+@media (pointer: coarse) {
+  .preview-canvas { height: 55vh; }
+}
+
+.preview svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.preview-canvas.active svg { touch-action: none; }
+.preview svg:active { cursor: grabbing; }
+
+.preview-hint {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  margin: 0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #ffffffd9;
+  color: #6b6a66;
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+
+.preview-error { margin: 0; color: var(--error); }
+
+.preview-layers:not([hidden]) ~ .preview-hint { display: none; }
+
+/* Big drawings need more than the text column: widen the preview, centered on the page */
+@media (min-width: 720px) {
+  .results .preview {
+    justify-self: unsafe center;
+    width: min(1100px, calc(100vw - 48px));
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 4px 16px #0000001a;
+  }
+}
+
+.preview:fullscreen {
+  padding: 8px;
+  background: var(--bg);
+}
+
+.preview:fullscreen .preview-canvas { flex: 1; height: auto; }
+
+.preview-layers {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  max-height: calc(100% - 16px);
+  width: min(240px, 70%);
+  overflow: auto;
+  padding: 8px;
+  border: 1px solid #d9d7d0;
+  border-radius: 6px;
+  background: #fff;
+  color: #1d1d1b;
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  place-items: stretch;
+}
+
+.preview-layers button {
+  align-self: flex-start;
+  margin-bottom: 4px;
+  padding: 2px 8px;
+  border: 1px solid #d9d7d0;
+  border-radius: 4px;
+  background: #fff;
+  color: #1d1d1b;
+  font: inherit;
+  cursor: pointer;
+}
+
+.preview-layers .preview-layers-done { display: none; }
+
+@media (max-width: 600px) {
+  .preview-layers {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-height: 60%;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -4px 16px #0003;
+  }
+
+  .preview-layers .preview-layers-done { display: block; align-self: flex-end; font-weight: 600; }
+}
+
+.preview-layers label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.preview-layers .swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #00000033;
+}
+
+.report {
+  grid-column: 1 / -1;
+  font-size: 0.85rem;
+}
+
+.report-open {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.report form {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.report p { margin: 0; color: var(--muted); }
+
+.report .report-title { color: var(--text); font-weight: 600; font-size: 0.95rem; }
+
+.report label {
+  display: grid;
+  gap: 4px;
+  color: var(--text);
+}
+
+/* 16px keeps iOS Safari from zooming in on focus */
+.report textarea, .report input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--field-border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+
+.report textarea:focus-visible, .report input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.report-actions { display: flex; gap: 8px; }
+
+.report-actions button {
+  padding: 8px 14px;
+  border: 1px solid var(--field-border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.report-actions button[type="submit"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .report-actions button[type="submit"] { color: #10161f; }
+}
+
+.report-actions button:disabled { opacity: 0.6; cursor: progress; }
+
+.faq { margin-top: 40px; }
+.faq h2 { font-size: 1.25rem; margin: 0 0 8px; }
+.faq h3 { font-size: 1rem; margin: 20px 0 4px; }
+.faq p { margin: 0; color: var(--muted); }
+
+footer p { margin: 0 0 4px; }
+footer a, .page a { color: var(--accent); }
+
+.page h2 { font-size: 1.15rem; margin: 28px 0 6px; }
+.page p, .page li { color: var(--muted); }
+.page ul { padding-left: 20px; }
+.page hr { border: 0; border-top: 1px solid var(--border); margin: 40px 0; }

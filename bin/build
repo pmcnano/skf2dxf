@@ -1,0 +1,7 @@
+#!/bin/sh
+# Bundles the page with the converter it runs into dist/
+set -e
+cd "$(dirname "$0")/.."
+rm -rf dist
+cp -R web dist
+cp skf2dxf.py preview.py patterns.json dist/

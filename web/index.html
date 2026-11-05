@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Convert SKF to DXF online – open AutoSketch files in AutoCAD</title>
+<meta name="description" content="Free converter for AutoSketch drawings (.skf) to DXF, so they open in AutoCAD and other CAD programs. Runs in your browser; your files aren't uploaded.">
+<link rel="canonical" href="https://skf2dxf.com/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://skf2dxf.com/">
+<meta property="og:title" content="Convert AutoSketch (.skf) to DXF">
+<meta property="og:description" content="Open AutoSketch drawings in AutoCAD. Free, in your browser, no upload.">
+<meta property="og:image" content="https://skf2dxf.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1f5fbf">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "SKF to DXF",
+  "url": "https://skf2dxf.com/",
+  "description": "Converts AutoSketch drawings (.skf) to DXF in the browser, so they open in AutoCAD.",
+  "applicationCategory": "DesignApplication",
+  "operatingSystem": "Any (web browser)",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+</head>
+<body>
+<main>
+  <header>
+    <a class="brand" href="./"><img src="icon-192.png" width="32" height="32" alt="">skf2dxf</a>
+    <h1>Convert AutoSketch (.skf) to DXF</h1>
+    <p class="lead">Open your AutoSketch drawings in AutoCAD, without AutoSketch installed.</p>
+  </header>
+
+  <div class="drop loading" id="drop">
+    <input type="file" id="files" accept=".skf,.SKF" multiple hidden>
+    <p class="drop-promise">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2h.5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1zm1.5 0h4V5a2 2 0 0 0-4 0z"/></svg>
+      Your drawings stay on your computer. Nothing is uploaded.
+    </p>
+    <button type="button" class="choose" id="choose">Choose .skf files</button>
+    <span class="drop-hint">or drop them here</span>
+    <p class="drop-loading" id="loading" aria-live="polite">Getting the converter ready… a one-time download of about 10 MB, then it works offline.</p>
+    <div class="progress" aria-hidden="true"></div>
+  </div>
+
+  <div class="summary" id="summary" hidden>
+    <p id="status" aria-live="polite"></p>
+    <button type="button" id="zip" hidden></button>
+    <p class="summary-error" id="zip-error" hidden>Couldn't create the ZIP. Try again, or download the files one by one.</p>
+  </div>
+
+  <p class="tip" id="tip" hidden>Next: open the DXF in AutoCAD (File › Open, file type DXF), then Save As DWG if you need one.</p>
+
+  <ul class="results" id="results"></ul>
+
+  <section class="notes">
+    <p>Everything happens in your browser: your drawings aren't uploaded anywhere, unless you choose to send us one to improve the converter.</p>
+    <p>Tested with AutoSketch 10 files. Angular dimensions aren't converted yet; the result tells you if anything was left out.</p>
+  </section>
+
+  <section class="faq">
+    <h2>Questions</h2>
+    <h3>What is an SKF file?</h3>
+    <p>It's a drawing made with AutoSketch, Autodesk's simple 2D drafting program. Autodesk no longer sells or updates AutoSketch, and AutoCAD can't open its .skf files, so older plans and details get stuck in a format nothing else reads.</p>
+    <h3>How do I open an SKF file in AutoCAD?</h3>
+    <p>Drop the .skf file above and download the DXF. In AutoCAD, use Open and choose the DXF file type. The same DXF also opens in BricsCAD, DraftSight, LibreCAD, QCAD and most other CAD programs.</p>
+    <h3>Can I convert SKF to DWG?</h3>
+    <p>Convert it to DXF here, open the DXF in AutoCAD and save it as DWG. DXF is AutoCAD's own exchange format, so nothing is lost on the way.</p>
+    <h3>What is kept in the conversion?</h3>
+    <p>Layers, colors, linetypes, lines, arcs, circles, ellipses, polylines, text, hatches with AutoSketch's patterns, symbols (as blocks) and dimensions (as editable AutoCAD dimensions). Angular dimensions aren't converted yet; when something is left out, the result says what.</p>
+    <h3>Which AutoSketch versions work?</h3>
+    <p>It was built and tested with AutoSketch 10 drawings, and many files from earlier versions convert too. If one of yours doesn't, use the "send us this file" link and we'll look at it.</p>
+    <h3>Are my drawings uploaded?</h3>
+    <p>No. The converter runs inside your browser, so your files never leave your computer. A drawing is only sent to us if you press "send us this file" yourself.</p>
+    <h3>Does it cost anything or need an install?</h3>
+    <p>It's free and needs no account. You can convert many files at once and download them as one ZIP. After the first visit the page also works offline, and your browser may offer to install it as an app.</p>
+  </section>
+
+  <footer>
+    <p>AutoSketch and AutoCAD are registered trademarks of Autodesk. This project is not affiliated with Autodesk.</p>
+    <p><a href="privacy">Privacy</a> · <a href="mailto:hello@skf2dxf.com">hello@skf2dxf.com</a></p>
+  </footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

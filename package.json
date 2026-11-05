@@ -1,0 +1,14 @@
+{
+  "name": "skf2dxf",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "bin/build",
+    "deploy": "bin/build && wrangler deploy",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "4.153.0"
+  }
+}

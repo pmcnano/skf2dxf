@@ -1,0 +1,6 @@
+#!/bin/sh
+# Runs the page and the report API locally (KV is simulated in .wrangler/)
+set -e
+cd "$(dirname "$0")/.."
+bin/build
+exec npx wrangler dev --port "${PORT:-8000}"
